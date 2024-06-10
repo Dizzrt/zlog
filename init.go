@@ -33,7 +33,6 @@ func initZlog(cfg ZlogConfig) {
 
 	rotateOptions := getRotateOptions(cfg)
 	rotateLogName := fmt.Sprintf("%s_%%Y%%m%%d%%H", cfg.LogFileName)
-	fmt.Println(rotateLogName)
 
 	rotater, err := rotatelogs.New(
 		filepath.Join(cfg.LogPath, rotateLogName),
@@ -54,7 +53,7 @@ func initZlog(cfg ZlogConfig) {
 
 func getRotateOptions(cfg ZlogConfig) []rotatelogs.Option {
 	options := make([]rotatelogs.Option, 0)
-	options = append(options, rotatelogs.WithLinkName(cfg.LogPath+cfg.LogFileName))
+	options = append(options, rotatelogs.WithLinkName(filepath.Join(cfg.LogPath, cfg.LogFileName)))
 
 	if cfg.RotateTime > 0 {
 		options = append(options, rotatelogs.WithRotationTime(cfg.RotateTime))
@@ -73,14 +72,16 @@ func getRotateOptions(cfg ZlogConfig) []rotatelogs.Option {
 
 func initLogPath(path string) {
 	// check if log path is exists
-	if _, err := os.Stat(path); err != nil {
+	s, err := os.Stat(path)
+	if err != nil {
 		if os.IsNotExist(err) {
-			// creat log path
-			if err = os.Mkdir(path, 0744); err != nil {
+			if err = os.MkdirAll(path, 0755); err != nil {
 				panic(err)
 			}
 		} else {
 			panic(err)
 		}
+	} else if !s.IsDir() {
+		panic(fmt.Errorf("the target log path \"%s\" already exists and is a file", path))
 	}
 }
