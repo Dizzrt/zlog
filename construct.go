@@ -21,7 +21,7 @@ func NewWithBufferedWriteSyncer(writeSyncer *zapcore.BufferedWriteSyncer, level 
 	}
 
 	tee := zapcore.NewTee(cores...)
-	l := zap.New(tee).WithOptions(zap.AddCallerSkip(1), zap.AddStacktrace(ErrorLevel))
+	l := zap.New(tee).WithOptions(zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(ErrorLevel))
 
 	lg := &Logger{
 		zl:  l,
@@ -58,5 +58,5 @@ func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 }
 
 func callerEncoder(caller zapcore.EntryCaller, enc zapcore.PrimitiveArrayEncoder) {
-	enc.AppendString("[" + caller.TrimmedPath() + "]")
+	enc.AppendString("[" + caller.FullPath() + "]")
 }
